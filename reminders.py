@@ -15,7 +15,7 @@ class Reminders(commands.Cog):
         if os.path.exists(REMINDERS_FILE):
             with open(REMINDERS_FILE, 'r') as f:
                 return json.load(f)
-        return {}    
+        return {}
 
 
     def save_reminders(self):
