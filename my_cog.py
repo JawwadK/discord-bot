@@ -56,6 +56,56 @@ class MyCog(commands.Cog):
         else:
             await ctx.send('Could not fetch a cat picture. Try again later!')
 
+    @commands.command()
+    async def flipcoin(self, ctx):
+        result = random.choice(['Heads', 'Tails'])
+        await ctx.send(f'🪙 The coin landed on {result}!')
+
+    @commands.command()
+    async def rolldice(self, ctx, sides: int = 6):
+        result = random.random.randint(1, sides)
+        await ctx.send(f'You rolled a {result}')
+
+    @commands.command()
+    async def quotes(self, ctx):
+        quotes = [
+            "These dudes think they the shit, they haven't even farted yet",
+            "honestly im not gay but if some man that was hella stacked could sceure me for the rest of my life i thihnk i'd be fine with being gay - Kingsley Lam",
+            "Holy shit my cheeks are fking destroyed - Darren Chen",
+            "Actually looks Like a girl \n Hot girl too \n Smashable - Jay Modi",
+        ]
+        quote = random.choice(quotes)
+        await ctx.send(f'This was said by someone in the server once: "{quote}"')
+    
+    @commands.command()
+    async def trivia(self, ctx):
+        questions = {
+            "What is Jacky Ly Chinese Name" : "Legume Singh",
+            "Whats Steph real name" : "Weenig",
+            "Whats 9 + 10" : "21"
+        }
+        question, answer = random.choice(list(questions.items()))
+        await ctx.send(f'Trivia Questions: {question}')
+        def check(m):
+            return m.author == ctx.author and m.channel == ctx.channel
+
+        try:
+            answer_msg = await self.bot.wait_for('message', check=check, timeout=30)
+            if answer_msg.content.lower == answer.lower():
+                await ctx.send('Correct!')
+            else:
+                await ctx.send(f'Wrong!')
+        except asyncio.TimeoutError:
+            await ctx.send(f'Time\'s up!')
+
+    @commands.command()
+    async def joke(self, ctx):
+        response = requests.get('https://official-joke-api.appspot.com/random_joke')
+        if response.status_code == 200:
+            joke = response.json()
+            await ctx.send(f'{joke["setup"]} - {joke["punchline"]}')
+        else:
+            await ctx.send('Could not fetch a joke. Try again later!')
 
 
 
