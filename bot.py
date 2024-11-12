@@ -1,23 +1,51 @@
 import discord
 from discord.ext import commands
+import os
 from config import TOKEN
-import requests
-
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix='!', intents=intents)
 
 
-@bot.event
-async def on_ready():
-    print(f'Bot is online as {bot.user}')
+class DiscordBot(commands.Bot):
+    def __init__(self):
+        intents = discord.Intents.all()
+        super().__init__(command_prefix='!', intents=intents)
+
+    async def setup_hook(self):
+        # Load all cogs from the cogs directory
+        for filename in os.listdir('./cogs'):
+            if filename.endswith('.py') and filename != '__init__.py':
+                try:
+                    await self.load_extension(f'cogs.{filename[:-3]}')
+                    print(f'Loaded cog: {filename[:-3]}')
+                except Exception as e:
+                    print(f'Failed to load cog {filename[:-3]}: {str(e)}')
+
+    async def on_ready(self):
+        print(f'Bot is online as {self.user}')
+        # Set a status for the bot
+        await self.change_presence(
+            activity=discord.Activity(
+                type=discord.ActivityType.watching,
+                name="!help for commands"
+            )
+        )
+
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            await ctx.send("❌ Command not found! Use !help to see available commands.")
+        elif isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ You don't have permission to use this command!")
+        elif isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Missing required argument! Check !help [command] for proper usage.")
+        else:
+            print(f'Error in {ctx.command}: {str(error)}')
+            await ctx.send("❌ An error occurred while executing the command.")
 
 
 async def main():
+    bot = DiscordBot()
     async with bot:
-        await bot.load_extension('my_cog')
         await bot.start(TOKEN)
 
-# Start the bot
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main())
