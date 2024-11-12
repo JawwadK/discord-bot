@@ -4,8 +4,7 @@ import json
 import os
 import asyncio
 from datetime import datetime, timedelta
-
-REMINDERS_FILE = 'reminders.json'
+from src.utils.constants import REMINDERS_DATA_PATH, REMINDER_CHECK_INTERVAL
 
 
 class Reminders(commands.Cog):
@@ -15,14 +14,15 @@ class Reminders(commands.Cog):
         self.reminder_task = self.bot.loop.create_task(self.check_reminders())
 
     def load_reminders(self):
-        if os.path.exists(REMINDERS_FILE):
-            with open(REMINDERS_FILE, 'r') as f:
+        try:
+            with open(REMINDERS_DATA_PATH, 'r') as f:
                 return json.load(f)
-        return {}
+        except FileNotFoundError:
+            return {}
 
     def save_reminders(self):
-        with open(REMINDERS_FILE, 'w') as f:
-            json.dump(self.reminders, f)
+        with open(REMINDERS_DATA_PATH, 'w') as f:
+            json.dump(self.reminders, f, indent=4)
 
     def parse_time(self, time_str):
         """Parse time string into seconds"""

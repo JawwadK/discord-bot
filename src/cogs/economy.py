@@ -3,6 +3,7 @@ from discord.ext import commands
 import json
 import random
 from datetime import datetime, timedelta
+from src.utils.constants import BANK_DATA_PATH, DAILY_AMOUNT, WORK_MIN_AMOUNT, WORK_MAX_AMOUNT, SLOTS_MIN_BET, INITIAL_BANK_CAPACITY
 
 
 class Economy(commands.Cog):
@@ -11,21 +12,20 @@ class Economy(commands.Cog):
         self.bank_data = {}
         self.load_bank_data()
         self.currency_name = "coins"
-        self.daily_amount = 100
-        self.work_cooldown = {}
-        self.work_min = 10
-        self.work_max = 100
-        self.slots_min = 50
+        self.daily_amount = DAILY_AMOUNT
+        self.work_min = WORK_MIN_AMOUNT
+        self.work_max = WORK_MAX_AMOUNT
+        self.slots_min = SLOTS_MIN_BET
 
     def load_bank_data(self):
         try:
-            with open('bank_data.json', 'r') as f:
+            with open(BANK_DATA_PATH, 'r') as f:
                 self.bank_data = json.load(f)
         except FileNotFoundError:
             self.bank_data = {}
 
     def save_bank_data(self):
-        with open('bank_data.json', 'w') as f:
+        with open(BANK_DATA_PATH, 'w') as f:
             json.dump(self.bank_data, f, indent=4)
 
     def get_account(self, user_id):

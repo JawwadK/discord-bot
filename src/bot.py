@@ -1,7 +1,16 @@
 import discord
 from discord.ext import commands
 import os
-from config import TOKEN
+import logging
+from datetime import datetime
+
+# Set up logging
+logging.basicConfig(
+    filename='logs/bot.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger('discord_bot')
 
 
 class DiscordBot(commands.Bot):
@@ -10,18 +19,23 @@ class DiscordBot(commands.Bot):
         super().__init__(command_prefix='!', intents=intents)
 
     async def setup_hook(self):
-        # Load all cogs from the cogs directory
-        for filename in os.listdir('./cogs'):
+        # Create necessary directories if they don't exist
+        os.makedirs('data/bank', exist_ok=True)
+        os.makedirs('data/reminders', exist_ok=True)
+        os.makedirs('logs', exist_ok=True)
+
+        # Load all cogs
+        for filename in os.listdir('./src/cogs'):
             if filename.endswith('.py') and filename != '__init__.py':
                 try:
-                    await self.load_extension(f'cogs.{filename[:-3]}')
-                    print(f'Loaded cog: {filename[:-3]}')
+                    await self.load_extension(f'src.cogs.{filename[:-3]}')
+                    logger.info(f'Loaded cog: {filename[:-3]}')
                 except Exception as e:
-                    print(f'Failed to load cog {filename[:-3]}: {str(e)}')
+                    logger.error(
+                        f'Failed to load cog {filename[:-3]}: {str(e)}')
 
     async def on_ready(self):
-        print(f'Bot is online as {self.user}')
-        # Set a status for the bot
+        logger.info(f'Bot is online as {self.user}')
         await self.change_presence(
             activity=discord.Activity(
                 type=discord.ActivityType.watching,
@@ -30,7 +44,6 @@ class DiscordBot(commands.Bot):
         )
 
     async def on_command_error(self, ctx, error):
-        # Unwrap the error if it's wrapped in CommandInvokeError
         error = getattr(error, 'original', error)
 
         if isinstance(error, commands.CommandNotFound):
@@ -44,20 +57,8 @@ class DiscordBot(commands.Bot):
         elif isinstance(error, commands.NoPrivateMessage):
             await ctx.send("❌ This command cannot be used in private messages!")
         elif isinstance(error, commands.CommandOnCooldown):
-            # This shouldn't trigger anymore for the work command, but good to have as backup
             minutes, seconds = divmod(error.retry_after, 60)
             await ctx.send(f"❌ Command is on cooldown! Try again in {int(minutes)}m {int(seconds)}s")
         else:
-            # Log unexpected errors
-            print(f'Unexpected error in {ctx.command}: {str(error)}')
+            logger.error(f'Unexpected error in {ctx.command}: {str(error)}')
             await ctx.send("❌ An unexpected error occurred while executing the command.")
-
-
-async def main():
-    bot = DiscordBot()
-    async with bot:
-        await bot.start(TOKEN)
-
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
