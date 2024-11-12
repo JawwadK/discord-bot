@@ -130,6 +130,10 @@ class Economy(commands.Cog):
                 color=discord.Color.red()
             )
             await ctx.send(embed=embed)
+            # Prevent the error from propagating
+            return
+        # If it's a different type of error, let it propagate
+        raise error
 
     @commands.command()
     async def deposit(self, ctx, amount: str):

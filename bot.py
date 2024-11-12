@@ -30,15 +30,27 @@ class DiscordBot(commands.Bot):
         )
 
     async def on_command_error(self, ctx, error):
+        # Unwrap the error if it's wrapped in CommandInvokeError
+        error = getattr(error, 'original', error)
+
         if isinstance(error, commands.CommandNotFound):
             await ctx.send("❌ Command not found! Use !help to see available commands.")
         elif isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ You don't have permission to use this command!")
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Missing required argument! Check !help [command] for proper usage.")
+        elif isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Invalid argument provided! Check !help [command] for proper usage.")
+        elif isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ This command cannot be used in private messages!")
+        elif isinstance(error, commands.CommandOnCooldown):
+            # This shouldn't trigger anymore for the work command, but good to have as backup
+            minutes, seconds = divmod(error.retry_after, 60)
+            await ctx.send(f"❌ Command is on cooldown! Try again in {int(minutes)}m {int(seconds)}s")
         else:
-            print(f'Error in {ctx.command}: {str(error)}')
-            await ctx.send("❌ An error occurred while executing the command.")
+            # Log unexpected errors
+            print(f'Unexpected error in {ctx.command}: {str(error)}')
+            await ctx.send("❌ An unexpected error occurred while executing the command.")
 
 
 async def main():
