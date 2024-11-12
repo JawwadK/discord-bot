@@ -38,7 +38,6 @@ class Reminders(commands.Cog):
                             del self.reminders[user_id]
 
                     self.save_reminders()
-
                     for user_id, message in due_reminders:
                         user = self.bot.get_user(int(user_id))
                         if user:
