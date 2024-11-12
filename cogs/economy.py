@@ -83,7 +83,7 @@ class Economy(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    @commands.cooldown(1, 3600, commands.BucketType.user)
+    @commands.cooldown(1, 3600, commands.BucketType.user)  # 1 hour cooldown
     async def work(self, ctx):
         """Work to earn some coins"""
         earnings = random.randint(self.work_min, self.work_max)
@@ -104,6 +104,32 @@ class Economy(commands.Cog):
             color=discord.Color.green()
         )
         await ctx.send(embed=embed)
+
+    @work.error
+    async def work_error(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            # Calculate remaining time
+            remaining_time = int(error.retry_after)
+            minutes, seconds = divmod(remaining_time, 60)
+            hours, minutes = divmod(minutes, 60)
+
+            # Create time string
+            time_parts = []
+            if hours > 0:
+                time_parts.append(f"{hours}h")
+            if minutes > 0:
+                time_parts.append(f"{minutes}m")
+            if seconds > 0:
+                time_parts.append(f"{seconds}s")
+
+            time_str = " ".join(time_parts)
+
+            embed = discord.Embed(
+                title="⏳ Work Cooldown",
+                description=f"You're tired from your last job! Take a break and try again in **{time_str}**",
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
 
     @commands.command()
     async def deposit(self, ctx, amount: str):
