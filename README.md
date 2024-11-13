@@ -1,4 +1,4 @@
-# Multi-Purpose Discord Bot
+# Say Hello to Jawwad Bot
 
 A feature-rich Discord bot built with discord.py that includes economy features, music playback, reminders, and various utility commands.
 
