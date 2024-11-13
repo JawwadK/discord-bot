@@ -36,6 +36,7 @@ config/config.py
 data/bank/bank_data.json
 data/reminders/reminders.json
 logs/*.log
+usefulcommands.txt
 
 # OS-specific
 .DS_Store
